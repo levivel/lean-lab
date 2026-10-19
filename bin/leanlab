@@ -40,7 +40,9 @@ leanlab — your Lean 4 lab (files in ~/lean-lab)
   leanlab check <file>        grade a file: errors / sorries left / solved
   leanlab progress            scoreboard for Practice/
   leanlab new <Name>          start Scratch/<Name>.lean
-  leanlab solution <Set>      open worked answers, e.g. leanlab solution P1_Logic
+  leanlab solution <Set>      open worked answers, e.g. leanlab solution P0_Basics
   leanlab share <file>        copy a live.lean-lang.org link to the file
+
+New to Lean? Start with Lesson 1: leanlab open Practice/P0_Basics.lean
 USAGE
 esac
