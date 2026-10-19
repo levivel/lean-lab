@@ -15,5 +15,5 @@ After following the steps above, you can remove this section from the README fil
 ## Lean Lab
 
 - Online lab (lessons, exercises, progress, sharing): https://claude.ai/artifact/BDVVwc2HH5zUtviXJ8SLye
-- `Practice/` — exercises with `sorry`; `Solutions/` — checked answers; `Scratch/` — your own files
+- `Practice/` — exercises with `[...]` blanks to fill in; `Solutions/` — checked answers; `Scratch/` — your own files
 - Run `leanlab` in Terminal for the commands.
