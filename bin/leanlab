@@ -1,0 +1,46 @@
+#!/bin/zsh
+# leanlab — learn, practice, check and share Lean proofs in ~/lean-lab
+LAB="$HOME/lean-lab"
+WEB="https://claude.ai/artifact/BDVVwc2HH5zUtviXJ8SLye"
+export PATH="$HOME/.elan/bin:$PATH"
+cd "$LAB" || exit 1
+
+check() {  # prints: status line; returns 0 when solved
+  local f="$1" out errs sorries
+  out=$(lake env lean "$f" 2>&1)
+  errs=$(print -r -- "$out" | grep -c ": error")
+  sorries=$(print -r -- "$out" | grep -cE "declaration uses .sorry.")
+  if (( errs > 0 )); then
+    echo "✗ ${f:t:r}: $errs error(s)"; print -r -- "$out" | grep -A3 ": error" | sed 's/^/    /' | head -30; return 1
+  elif (( sorries > 0 )); then
+    echo "… ${f:t:r}: $sorries proof(s) still use sorry"; return 1
+  else
+    echo "✅ ${f:t:r}: solved"; return 0
+  fi
+}
+
+case "$1" in
+  open)     code "$LAB" "${2:+$LAB/$2}" ;;
+  web)      open "$WEB" ;;
+  check)    [[ -f "$2" ]] || { echo "usage: leanlab check <file.lean>"; exit 1 }
+            echo "Checking ${2:t} (this can take a few minutes on this Mac)…"; check "$2" ;;
+  progress) for f in Practice/*.lean; do check "$f" | head -1; done ;;
+  new)      [[ -n "$2" ]] || { echo "usage: leanlab new <Name>"; exit 1 }
+            f="Scratch/$2.lean"; [[ -e "$f" ]] || printf 'import Mathlib.Tactic\n\nexample (P Q : Prop) (hp : P) (hq : Q) : P ∧ Q := by\n  sorry\n' > "$f"
+            code "$LAB" "$LAB/$f"; echo "$f" ;;
+  solution) f="Solutions/${2%.lean}.lean"; [[ -f "$f" ]] || { echo "Pick one of: $(ls Solutions | sed 's/.lean//' | tr '\n' ' ')"; exit 1 }
+            code "$LAB" "$LAB/$f" ;;
+  share)    [[ -f "$2" ]] || { echo "usage: leanlab share <file.lean>"; exit 1 }
+            url="https://live.lean-lang.org/#code=$(sed 's/^import Mathlib\..*/import Mathlib/' "$2" | awk '!(/^import Mathlib$/ && seen++)' | python3 -c 'import sys,urllib.parse;print(urllib.parse.quote(sys.stdin.read(),safe=""))')"
+            print -rn -- "$url" | pbcopy; echo "Link copied to the clipboard (${#url} characters). Opening it…"; open "$url" ;;
+  *)        cat <<USAGE
+leanlab — your Lean 4 lab (files in ~/lean-lab)
+  leanlab web                 open the online Lean Lab (lessons, exercises, progress)
+  leanlab open                open the lab in VS Code
+  leanlab check <file>        grade a file: errors / sorries left / solved
+  leanlab progress            scoreboard for Practice/
+  leanlab new <Name>          start Scratch/<Name>.lean
+  leanlab solution <Set>      open worked answers, e.g. leanlab solution P1_Logic
+  leanlab share <file>        copy a live.lean-lang.org link to the file
+USAGE
+esac
